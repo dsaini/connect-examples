@@ -1,0 +1,51 @@
+/**
+	Executes a SQL select query and creates a string from the results 
+  @param0 {String} dbConn - connection string for database
+	@param1 {String} query_string - query to execute
+	@param2 {String} col_delim - column delimiter separates each value in a row, default value is a commma
+	@param3 {String} row_delim - row delimiter separates earch row in the resultset, default value is a newline character
+	@return {String} returns the resultset as a string with column and row delimiters
+*/
+function get_sql_string(dbConn,query_string,col_delim,row_delim) {
+	var result = dbConn.executeCachedQuery( query_string );
+	var result_string = '';
+	var column_count = result.getMetaData().getColumnCount();
+	if ( col_delim ){
+		col_delim = col_delim;
+	}
+	else {
+		col_delim = ','; 
+	}
+
+	if ( row_delim ){
+		row_delim = row_delim;
+	}
+	else {
+		row_delim = '\n'; 
+	}
+	
+	if(result.size() > 0){
+		while (result.next()) {
+			i = 1;
+			var line = '';
+			while (i <= column_count) {
+				line = line + result.getString(i) + col_delim;
+				i++;
+			}
+			result_string = result_string + line.slice(0, -1) + row_delim;
+		}
+		result_string = result_string.slice(0, -1);
+		result.close();
+		if (result_string.toString() != 'null' || result_string != null) {
+			return result_string.trim();
+		}
+		else {
+			return '';
+		}
+	}
+	else {
+		dbConn.close();
+		return '';
+	}
+	dbConn.close();
+}
